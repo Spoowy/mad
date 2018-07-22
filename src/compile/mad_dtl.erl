@@ -5,7 +5,8 @@
 compile(Dir,Config) ->
     case mad_utils:get_value(erlydtl_opts, Config, []) of
         [] -> false;
-         X -> compile_erlydtl_files(validate_erlydtl_opts(Dir,X)) end.
+         X -> compile_erlydtl_files(validate_erlydtl_opts(Dir,X))
+       end.
 
 get_kv(K, Opts, Default) ->
     V = mad_utils:get_value(K, Opts, Default),
