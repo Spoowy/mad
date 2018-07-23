@@ -39,6 +39,7 @@ compile_erlydtl_files(Opts) ->
     {{_, SourceExt}, Opts2} = get_kv(source_ext, Opts1, ""),
     {{_, ModuleExt}, Opts3} = get_kv(module_ext, Opts2, ""),
     {{_, OutDir},        _} = get_kv(out_dir,    Opts3, ""),
+    Opts4 = Opts3 ++ [{auto_escape, false}], % deactivate auto escape
 
     true = code:add_pathz(OutDir),
 
@@ -51,7 +52,7 @@ compile_erlydtl_files(Opts) ->
         Compiled = mad_compile:is_compiled(BeamFile, F),
         case Compiled of false ->
              mad:info("DTL Compiling ~s~n", [F -- mad_utils:cwd()]),
-             Res = erlydtl:compile(F, ModuleName, Opts3),
+             Res = erlydtl:compile(F, ModuleName, Opts4),
              file:change_time(BeamFile, calendar:local_time()),
              case Res of {error,Error} -> mad:info("Error: ~p~n",[Error]);
                                     OK -> OK end;
