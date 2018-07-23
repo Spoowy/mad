@@ -34,12 +34,26 @@ module_name(File, Ext, NewExt) ->
     list_to_atom(filename:basename(File, Ext) ++ NewExt).
 
 compile_erlydtl_files(Opts) ->
-
+    gettexter:bindtextdomain(wf:config(gettexter,domain, my_app), wf:config(gettexter, path, "apps/web/priv/locale")),
+    gettexter:textdomain(wf:config(gettexter, domain, my_app)),
     {{_, DocRoot},   Opts1} = get_kv(doc_root,   Opts,  ""),
     {{_, SourceExt}, Opts2} = get_kv(source_ext, Opts1, ""),
     {{_, ModuleExt}, Opts3} = get_kv(module_ext, Opts2, ""),
     {{_, OutDir},        _} = get_kv(out_dir,    Opts3, ""),
-    Opts4 = Opts3 ++ [{auto_escape, false}], % deactivate auto escape
+    TransFun = fun({Str, {StrPlural, N}}, {Locale, Ctx}) ->
+               unicode:characters_to_binary(gettexter:pngettext(Ctx, Str, StrPlural, N, Locale));
+              ({Str, {StrPlural, N}}, Locale) ->
+               unicode:characters_to_binary(gettexter:ngettext(Str, StrPlural, N, Locale));
+              (Str, {Locale, Ctx}) ->
+               unicode:characters_to_binary(gettexter:pgettext(Ctx, Str, Locale));
+              (Str, Locale) ->
+               unicode:characters_to_binary(gettexter:gettext(Str, Locale))
+           end,
+    Opts4 = Opts3 ++ [{debug_compiler, true},
+                      {debug_root, temp_dtl},
+                      {auto_escape, false}, % deactivate auto escape
+                      {locales, ["ru", "de"]},
+                      {translation_fun, TransFun}],
 
     true = code:add_pathz(OutDir),
 
@@ -52,6 +66,10 @@ compile_erlydtl_files(Opts) ->
         Compiled = mad_compile:is_compiled(BeamFile, F),
         case Compiled of false ->
              mad:info("DTL Compiling ~s~n", [F -- mad_utils:cwd()]),
+             erlang:display(compiling),
+             erlang:display(F),
+             erlang:display(ModuleName),
+             erlang:display(Opts4),
              Res = erlydtl:compile(F, ModuleName, Opts4),
              file:change_time(BeamFile, calendar:local_time()),
              case Res of {error,Error} -> mad:info("Error: ~p~n",[Error]);
