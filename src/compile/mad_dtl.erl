@@ -34,25 +34,23 @@ module_name(File, Ext, NewExt) ->
     list_to_atom(filename:basename(File, Ext) ++ NewExt).
 
 compile_erlydtl_files(Opts) ->
-    gettexter:bindtextdomain(wf:config(gettexter,domain, my_app), wf:config(gettexter, path, "apps/web/priv/locale")),
-    gettexter:textdomain(wf:config(gettexter, domain, my_app)),
     {{_, DocRoot},   Opts1} = get_kv(doc_root,   Opts,  ""),
     {{_, SourceExt}, Opts2} = get_kv(source_ext, Opts1, ""),
     {{_, ModuleExt}, Opts3} = get_kv(module_ext, Opts2, ""),
     {{_, OutDir},        _} = get_kv(out_dir,    Opts3, ""),
     TransFun = fun({Str, {StrPlural, N}}, {Locale, Ctx}) ->
-               unicode:characters_to_binary(gettexter:pngettext(Ctx, Str, StrPlural, N, Locale));
+               mws_lang:pngettext(Ctx, Str, StrPlural, N, Locale);
               ({Str, {StrPlural, N}}, Locale) ->
-               unicode:characters_to_binary(gettexter:ngettext(Str, StrPlural, N, Locale));
+               mws_lang:ngettext(Str, StrPlural, N, Locale);
               (Str, {Locale, Ctx}) ->
-               unicode:characters_to_binary(gettexter:pgettext(Ctx, Str, Locale));
+               mws_lang:pgettext(Ctx, Str, Locale);
               (Str, Locale) ->
-               unicode:characters_to_binary(gettexter:gettext(Str, Locale))
+               mws_lang:gettext(Str, Locale)
            end,
-    Opts4 = Opts3 ++ [{debug_compiler, true},
-                      {debug_root, temp_dtl},
+    Opts4 = Opts3 ++ [%{debug_compiler, true},
+                      %{debug_root, temp_dtl},
                       {auto_escape, false}, % deactivate auto escape
-                      {locales, ["ru", "de"]},
+                      {locales, mws_lang:locales()},
                       {translation_fun, TransFun}],
 
     true = code:add_pathz(OutDir),
