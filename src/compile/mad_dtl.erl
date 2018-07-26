@@ -51,7 +51,8 @@ compile_erlydtl_files(Opts) ->
                       %{debug_root, temp_dtl},
                       {auto_escape, false}, % deactivate auto escape
                       {locales, mws_lang:locales()},
-                      {translation_fun, TransFun}],
+                      {translation_fun, TransFun},
+                      {record_info, kvs_web:record_infos()}],
 
     true = code:add_pathz(OutDir),
 
