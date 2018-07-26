@@ -64,10 +64,6 @@ compile_erlydtl_files(Opts) ->
         Compiled = mad_compile:is_compiled(BeamFile, F),
         case Compiled of false ->
              mad:info("DTL Compiling ~s~n", [F -- mad_utils:cwd()]),
-             erlang:display(compiling),
-             erlang:display(F),
-             erlang:display(ModuleName),
-             erlang:display(Opts4),
              Res = erlydtl:compile(F, ModuleName, Opts4),
              file:change_time(BeamFile, calendar:local_time()),
              case Res of {error,Error} -> mad:info("Error: ~p~n",[Error]);
